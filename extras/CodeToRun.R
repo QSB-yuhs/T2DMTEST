@@ -113,8 +113,7 @@ df_3 <- renderTranslateQuerySql(conn,
 
 
 
-#cohort method 환자군 분리(R의경우 반복문의 속도가 느린편이라 lsit 형식으로 변경후 비교)
-
+#cohort method 환자군 분리(R의경우 반복문의 속도가 느린편이라 list 형식으로 변경후 비교)
 df_treatment <- df_cm$treatment
 df_id <- df_cm$subjectId
 df_id_0 <- df_0$SUBJECT_ID
@@ -122,6 +121,7 @@ df_id_1 <- df_1$SUBJECT_ID
 df_id_2 <- df_2$SUBJECT_ID
 df_id_3 <- df_3$SUBJECT_ID
 
+#합병증 개수 0개 환자
 for(i in 1:length(df_id)){
   for( j in 1:length(df_id_0)){
     if(df_id[i] == df_id_0[j])
@@ -129,6 +129,7 @@ for(i in 1:length(df_id)){
   }
 }
 
+#합병증 개수 1개 환자
 for(i in 1:length(df_id)){
   for( j in 1:length(df_id_1)){
     if(df_id[i] == df_id_1[j])
@@ -136,6 +137,7 @@ for(i in 1:length(df_id)){
   }
 }
 
+#합병증 개수 2개 환자
 for(i in 1:length(df_id)){
   for( j in 1:length(df_id_2)){
     if(df_id[i] == df_id_2[j])
@@ -143,6 +145,7 @@ for(i in 1:length(df_id)){
   }
 }
 
+#합병증 개수 3개 환자
 for(i in 1:length(df_id)){
   for( j in 1:length(df_id_3)){
     if(df_id[i] == df_id_3[j])
@@ -150,12 +153,13 @@ for(i in 1:length(df_id)){
   }
 }
 
+#합병증 개수 변경후 저장
 df_cm$treatment <- df_treatment
 
 write.csv(df_cm,file="df_cm.csv")
 
 
-#합병증 개수별 코호트 조합
+#합병증 개수별 코호트 Target, Comparator 분리
 ple_0 <- df_cm %>% filter(df_cm$treatment == 0)
 ple_0$treatment <- 1
 ple_1 <- df_cm %>% filter(df_cm$treatment == 1)
@@ -165,6 +169,7 @@ ple_2$treatment <- 0
 ple_3 <- df_cm %>% filter(df_cm$treatment == 3)
 ple_3$treatment <- 0
 
+#합병증 개수별 코호트 조합
 df_solo <- rbind(ple_0,ple_1)
 df_double <- rbind(ple_0,ple_2)
 df_triple <- rbind(ple_0,ple_3)
@@ -181,7 +186,7 @@ matchedPop_3 <- matchOnPs(population = df_triple, caliper = 0,
                           caliperScale = "standardized logit", maxRatio = 0)
 
 
-#COX 모델 생성 후 출력
+#COX 모델 생성
 outcomeModel_1 <- fitOutcomeModel(population = df_solo,
                                   modelType = "cox",
                                   stratified = FALSE)
@@ -191,6 +196,7 @@ outcomeModel_2 <- fitOutcomeModel(population = df_double,
 outcomeModel_3 <- fitOutcomeModel(population = df_triple,
                                   modelType = "cox",
                                   stratified = FALSE)
+#COX 모델 출력
 outcomeModel_1
 outcomeModel_2
 outcomeModel_3
